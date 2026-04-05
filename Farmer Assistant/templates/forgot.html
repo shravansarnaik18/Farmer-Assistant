@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('lang','en') }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ text.forgot_password_title }}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light d-flex align-items-center" style="height:100vh;">
+    <div class="position-absolute top-0 end-0 p-2">
+        <a href="/set_language/en" class="me-1">English</a>|
+        <a href="/set_language/mr" class="mx-1">मराठी</a>|
+        <a href="/set_language/hi" class="ms-1">हिंदी</a>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-4">
+                        <h3 class="text-center mb-4 text-success fw-bold">
+                            {{ text.forgot_password_header }}
+                        </h3>
+
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, msg in messages %}
+                                <div class="alert alert-{{ 'danger' if category=='error' else 'success' }}" role="alert">
+                                    {{ msg }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+
+                        <form method="POST">
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ text.forgot_mobile_label }}</label>
+                                <input type="text" name="mobile" 
+                                       class="form-control" 
+                                       placeholder="{{ text.enter_mobile }}" required pattern="\d{10}" maxlength="10" title="10 digit mobile number">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ text.forgot_password_label }}</label>
+                                <input type="password" name="password" 
+                                       class="form-control" 
+                                       placeholder="{{ text.enter_password }}" required minlength="6" title="Minimum 6 characters">
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success">
+                                    {{ text.reset_button }}
+                                </button>
+                            </div>
+
+                        </form>
+
+                        <div class="text-center mt-3">
+                            <small>
+                                <a href="/login" class="text-decoration-none text-primary fw-bold">
+                                    {{ text.login_link }}
+                                </a>
+                            </small>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

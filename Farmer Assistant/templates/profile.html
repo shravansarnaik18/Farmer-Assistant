@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('lang','en') }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ text.profile_title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); min-height: 100vh;">
+
+    <div class="container mt-5 mb-5">
+        
+        <!-- DELETE ACCOUNT DANGER BANNER -->
+        <div class="alert alert-danger d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 p-4 rounded-3" role="alert">
+            <div>
+                <h5 class="alert-heading mb-2"><i class="fas fa-exclamation-triangle"></i> {{ text.danger_zone or 'Danger Zone' }}</h5>
+                <p class="mb-0"><i class="fas fa-info-circle"></i> {{ text.delete_account_warning or 'Permanently delete your account and all associated data' }}</p>
+            </div>
+            <button type="button" class="btn btn-danger fw-bold flex-shrink-0" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                <i class="fas fa-trash-alt"></i> {{ text.delete_account or 'Delete Account' }}
+            </button>
+        </div>
+
+        <!-- PROFILE CARD -->
+        <div class="card rounded-4 border-0 shadow-lg">
+            <div class="card-body p-5">
+
+                <h3 class="text-center fw-bold mb-5"><i class="fas fa-user-circle text-primary"></i> {{ text.update_profile }}</h3>
+
+                <form method="POST">
+
+                    <!-- Row 1: Name & Mobile -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-bold">
+                                <i class="fas fa-user text-primary"></i>
+                                {{ text.name_label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="name" name="name" class="form-control form-control-lg border-2" 
+                                placeholder="Enter your full name"
+                                value="{{ user.name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mobile" class="form-label fw-bold">
+                                <i class="fas fa-mobile-alt text-primary"></i>
+                                {{ text.mobile_label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="tel" id="mobile" name="mobile" class="form-control form-control-lg border-2"
+                                placeholder="Enter your mobile number"
+                                value="{{ user.mobile }}" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Age & Farmer Type -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="age" class="form-label fw-bold">
+                                <i class="fas fa-birthday-cake text-primary"></i>
+                                {{ text.age_label }}
+                            </label>
+                            <input type="number" id="age" name="age" class="form-control border-2" 
+                                placeholder="Enter your age"
+                                value="{{ user.age or '' }}" min="18" max="100">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="farmer_type" class="form-label fw-bold">
+                                <i class="fas fa-leaf text-primary"></i>
+                                {{ text.farmer_type }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select id="farmer_type" name="farmer_type" class="form-select border-2" required>
+                                <option value="">-- {{ text.select_type }} --</option>
+                                {% for ft in farmer_types %}
+                                <option value="{{ ft.name }}" {% if user.farmer_type and user.farmer_type == ft.name %}selected{% endif %}>
+                                    {{ ft.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: State & District -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="state" class="form-label fw-bold">
+                                <i class="fas fa-map-pin text-primary"></i>
+                                {{ text.state_label }}
+                            </label>
+                            <select id="state" name="state" class="form-select border-2">
+                                <option value="">{{ text.select_state }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="district" class="form-label fw-bold">
+                                <i class="fas fa-location-dot text-primary"></i>
+                                {{ text.district_label }}
+                            </label>
+                            <select id="district" name="district" class="form-select border-2">
+                                <option value="">{{ text.select_district }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Village & Land -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="village" class="form-label fw-bold">
+                                <i class="fas fa-home text-primary"></i>
+                                {{ text.village_label }}
+                            </label>
+                            <input type="text" id="village" name="village" class="form-control border-2" 
+                                placeholder="Enter your village name"
+                                value="{{ user.village or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="land_hectares" class="form-label fw-bold">
+                                <i class="fas fa-square text-primary"></i>
+                                {{ text.land_label }}
+                            </label>
+                            <div class="input-group">
+                                <input type="number" id="land_hectares" name="land_hectares" class="form-control border-2"
+                                    placeholder="Enter land area"
+                                    value="{{ user.land_hectares or '' }}" step="0.1" min="0.1" max="100">
+                                <span class="input-group-text border-2"><i class="fas fa-rulers"></i> ha</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-grid mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                            <i class="fas fa-save"></i> {{ text.update_button }}
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DELETE ACCOUNT CONFIRMATION MODAL -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 border-danger border-4">
+                <div class="modal-header bg-danger text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="deleteAccountModalLabel">
+                        <i class="fas fa-exclamation-triangle"></i> Confirm Account Deletion
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="/delete_account">
+                    <div class="modal-body">
+                        <p class="fw-bold text-danger mb-3" style="font-size: 16px;">
+                            <i class="fas fa-warning"></i> Are you absolutely sure you want to delete your account?
+                        </p>
+                        <p class="text-muted mb-2"><i class="fas fa-times-circle"></i> This action is <strong>PERMANENT</strong> and <strong>CANNOT</strong> be undone.</p>
+                        <p class="text-muted fw-semibold mb-2"><i class="fas fa-trash-alt"></i> Your data to be deleted:</p>
+                        <ul class="text-muted ms-4">
+                            <li><i class="fas fa-address-card"></i> Profile information and settings</li>
+                            <li><i class="fas fa-history"></i> Activity history and logs</li>
+                            <li><i class="fas fa-star"></i> All saved preferences</li>
+                        </ul>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmDelete">
+                            <label class="form-check-label" for="confirmDelete">
+                                <i class="fas fa-check-square"></i> <strong>I understand and I want to permanently delete my account and all my data</strong>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-danger fw-bold" id="confirmDeleteBtn" disabled>
+                            <i class="fas fa-trash-alt"></i> YES, DELETE MY ACCOUNT
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Delete Account Confirmation Handler
+            const confirmCheckbox = document.getElementById("confirmDelete");
+            const deleteBtn = document.getElementById("confirmDeleteBtn");
+            
+            if (confirmCheckbox && deleteBtn) {
+                confirmCheckbox.addEventListener("change", function () {
+                    deleteBtn.disabled = !this.checked;
+                });
+            }
+
+            // State/District Loader
+            const stateSelect = document.getElementById("state");
+            const districtSelect = document.getElementById("district");
+            
+            if (stateSelect && districtSelect) {
+                let districtData = {};
+
+                fetch("/static/data/india_districts.json")
+                    .then(res => res.json())
+                    .then(data => {
+                        districtData = data;
+                        Object.keys(districtData).forEach(state => {
+                            let option = document.createElement("option");
+                            option.value = state;
+                            option.text = state;
+                            stateSelect.appendChild(option);
+                        });
+
+                        let savedState = "{{ user.state }}";
+                        let savedDistrict = "{{ user.district }}";
+                        
+                        if (savedState) {
+                            stateSelect.value = savedState;
+                            loadDistricts();
+                            setTimeout(() => {
+                                districtSelect.value = savedDistrict;
+                            }, 100);
+                        }
+                    })
+                    .catch(err => console.log("Error loading districts:", err));
+
+                function loadDistricts() {
+                    let selectedState = stateSelect.value;
+                    districtSelect.innerHTML = '<option value="">{{ text.select_district }}</option>';
+                    
+                    if (districtData[selectedState]) {
+                        districtData[selectedState].forEach(district => {
+                            let option = document.createElement("option");
+                            option.value = district;
+                            option.text = district;
+                            districtSelect.appendChild(option);
+                        });
+                    }
+                }
+
+                stateSelect.addEventListener("change", loadDistricts);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
