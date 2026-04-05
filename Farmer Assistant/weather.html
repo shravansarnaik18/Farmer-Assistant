@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('lang','en') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ text.weather_title }} - {{ text.app_name }}</title>
+    
+    <!-- Bootstrap CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            background-attachment: fixed;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        /* Animated background elements */
+        .bg-blob {
+            position: fixed;
+            border-radius: 50%;
+            opacity: 0.15;
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            top: -100px;
+            left: -100px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            bottom: -150px;
+            right: -150px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(30px, -50px); }
+            66% { transform: translate(-20px, 20px); }
+        }
+
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        /* Form wrapper */
+        .form-wrapper {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 24px;
+            padding: 50px 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Header */
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .form-subtitle {
+            color: rgba(203, 213, 225, 0.6);
+            font-size: 0.95rem;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
+
+        /* Form group */
+        .form-group {
+            margin-bottom: 28px;
+            animation: slideUp 0.6s ease 0.2s both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(203, 213, 225, 0.8);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .form-label i {
+            margin-right: 6px;
+            color: #60a5fa;
+        }
+
+        /* Input container */
+        .input-container {
+            position: relative;
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-input {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1.5px solid rgba(148, 163, 184, 0.2);
+            border-radius: 14px;
+            padding: 16px 18px;
+            color: #f1f5f9;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-input::placeholder {
+            color: rgba(148, 163, 184, 0.5);
+        }
+
+        .form-input:hover {
+            border-color: rgba(96, 165, 250, 0.4);
+            background: rgba(30, 41, 59, 0.95);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(96, 165, 250, 0.8);
+            background: rgba(30, 41, 59, 1);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(148, 163, 184, 0.5);
+            pointer-events: none;
+            transition: color 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .form-input:focus ~ .input-icon {
+            color: #60a5fa;
+        }
+
+        .form-input:not(:placeholder-shown) ~ .input-icon {
+            color: #60a5fa;
+        }
+
+        /* Submit button */
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #0ea5e9 100%);
+            border: none;
+            border-radius: 14px;
+            padding: 16px 24px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+            animation: slideUp 0.6s ease 0.4s both;
+            letter-spacing: 0.3px;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #60a5fa 100%);
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn i {
+            margin-right: 8px;
+        }
+
+        /* Results section */
+        .results-wrapper {
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin-top: 30px;
+        }
+
+        .weather-display {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 24px;
+            padding: 50px 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .weather-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
+        }
+
+        .weather-icon {
+            font-size: 5rem;
+            margin-bottom: 24px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .weather-city {
+            font-size: 2rem;
+            color: #f1f5f9;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .weather-temperature {
+            font-size: 4.5rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 20px 0;
+            line-height: 1;
+        }
+
+        .weather-condition {
+            color: rgba(203, 213, 225, 0.7);
+            font-size: 1.1rem;
+            text-transform: capitalize;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .detail-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .detail-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(96, 165, 250, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .detail-label {
+            color: rgba(148, 163, 184, 0.6);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            color: #f1f5f9;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        /* Empty state */
+        .empty-state {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 24px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: rgba(96, 165, 250, 0.4);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .empty-state h3 {
+            color: #f1f5f9;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            color: rgba(203, 213, 225, 0.6);
+            font-size: 0.95rem;
+        }
+
+        /* Error state */
+        .error-state {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .error-state h3 {
+            color: #ef4444;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .error-state p {
+            color: rgba(203, 213, 225, 0.6);
+            font-size: 0.95rem;
+        }
+
+        /* Back button */
+        .back-link {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 10;
+            color: rgba(203, 213, 225, 0.7);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #60a5fa;
+            transform: translateX(-4px);
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                max-width: 100%;
+            }
+
+            .form-wrapper,
+            .weather-display,
+            .empty-state,
+            .error-state {
+                padding: 40px 24px;
+                border-radius: 20px;
+            }
+
+            .form-title {
+                font-size: 1.5rem;
+            }
+
+            .form-subtitle {
+                font-size: 0.85rem;
+            }
+
+            .weather-icon {
+                font-size: 4rem;
+            }
+
+            .weather-city {
+                font-size: 1.5rem;
+            }
+
+            .weather-temperature {
+                font-size: 3.5rem;
+            }
+
+            .weather-details {
+                grid-template-columns: 1fr;
+            }
+
+            .back-link {
+                top: 20px;
+                left: 20px;
+                font-size: 0.9rem;
+            }
+
+            .bg-blob {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-wrapper,
+            .weather-display,
+            .empty-state,
+            .error-state {
+                padding: 30px 20px;
+            }
+
+            .form-title {
+                font-size: 1.3rem;
+            }
+
+            .submit-btn {
+                padding: 14px 20px;
+                font-size: 0.9rem;
+            }
+
+            .weather-temperature {
+                font-size: 2.8rem;
+            }
+
+            .weather-city {
+                font-size: 1.3rem;
+            }
+
+            .empty-state {
+                padding: 50px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="position-absolute top-0 end-0 p-2">
+        <a href="/set_language/en" class="me-1">English</a>|
+        <a href="/set_language/mr" class="mx-1">मराठी</a>|
+        <a href="/set_language/hi" class="ms-1">हिंदी</a>
+    </div>
+
+    <!-- Animated background blobs -->
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
+    <!-- Back button -->
+    <a href="/dashboard" class="back-link">
+        <i class="bi bi-arrow-left"></i> {{ text.back }}
+    </a>
+
+    <div class="container">
+        <!-- Form Section -->
+        <div class="form-wrapper">
+            <div class="form-header">
+                <h1 class="form-title">{{ text.weather_title }}</h1>
+                <p class="form-subtitle">{{ text.weather_subtitle }}</p>
+            </div>
+
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label" for="city">
+                        <i class="bi bi-geo-alt-fill"></i> {{ text.city_label }}
+                    </label>
+                    <div class="input-container">
+                        <input 
+                            type="text" 
+                            id="city"
+                            name="city" 
+                            class="form-input"
+                            placeholder="{{ text.city_placeholder }}"
+                            autocomplete="off"
+                            required
+                        >
+                        <i class="bi bi-search input-icon"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="bi bi-cloud-sun-fill"></i> {{ text.get_weather }}
+                </button>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-wrapper">
+            {% if weather %}
+                {% if weather != text.city_not_found %}
+                <div class="weather-display">
+                    {% if 'rain' in weather.description.lower() %}
+                        <i class="bi bi-cloud-rain-heavy weather-icon" style="color: #60a5fa;"></i>
+                    {% elif 'cloud' in weather.description.lower() %}
+                        <i class="bi bi-cloud weather-icon" style="color: #94a3b8;"></i>
+                    {% elif 'clear' in weather.description.lower() or 'sunny' in weather.description.lower() %}
+                        <i class="bi bi-sun weather-icon" style="color: #fbbf24;"></i>
+                    {% else %}
+                        <i class="bi bi-cloud-sun weather-icon" style="color: #fbbf24;"></i>
+                    {% endif %}
+
+                    <div class="weather-city">{{ weather.city }}</div>
+                    <div class="weather-temperature">{{ weather.temperature }}°</div>
+                    <div class="weather-condition">{{ weather.description }}</div>
+
+                    <div class="weather-details">
+                        <div class="detail-card">
+                            <div class="detail-label">
+                                <i class="bi bi-droplet"></i> {{ text.humidity }}
+                            </div>
+                            <div class="detail-value">{{ weather.humidity }}%</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-label">
+                                <i class="bi bi-thermometer-half"></i> {{ text.feels_like }}
+                            </div>
+                            <div class="detail-value">{{ weather.temperature }}°</div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="error-state">
+                    <h3>
+                        <i class="bi bi-exclamation-triangle-fill"></i> {{ text.not_found_header }}
+                    </h3>
+                    <p>{{ text.not_found_desc }}</p>
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-cloud"></i>
+                <h3>{{ text.no_data_yet }}</h3>
+                <p>{{ text.enter_city_to_start }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
